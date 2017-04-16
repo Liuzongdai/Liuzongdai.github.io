@@ -226,7 +226,7 @@
     </button>
 
     <ul class="post-toc-wrap mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="post-toc-trigger-btn">
-        <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#系统总览"><span class="post-toc-number">1.</span> <span class="post-toc-text">系统总览</span></a></li></ol>
+        <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#系统总览"><span class="post-toc-number">1.</span> <span class="post-toc-text">系统总览</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#SVM训练分类器"><span class="post-toc-number">2.</span> <span class="post-toc-text">SVM训练分类器</span></a></li></ol></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#1-gt-训练集样本图片预处理"><span class="post-toc-number"></span> <span class="post-toc-text">1>训练集样本图片预处理</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#2-gt-计算像素点梯度"><span class="post-toc-number"></span> <span class="post-toc-text">2>计算像素点梯度</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#3-gt-在8-8cell内计算梯度直方图"><span class="post-toc-number"></span> <span class="post-toc-text">3>在8*8cell内计算梯度直方图</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#4-gt-Block区域整合"><span class="post-toc-number"></span> <span class="post-toc-text">4>Block区域整合</span></a>
 
         <!--
         <li class="mdl-menu__item">
@@ -374,7 +374,13 @@
     
         <p>本文提出了一个基于 TK1 微型处理器的目标检测与识别系统,使用 HOG(histogram of oriented gradient)进行特征提取,SVM(support vector machine) 进行分类。针对不同的目标检测识别的情景下,给出了方案的最优化调整方式。 算法结合 TK1 性能强大的 GPU 模块,准确度与速度在实时条件下都具有良好的 表现,可广泛应用于各类微型机器人以及要求整体体积小、功耗低、实时反应好的情景。</p>
 <h3 id="系统总览"><a href="#系统总览" class="headerlink" title="系统总览"></a>系统总览</h3><p>本系统包含两大模块,硬件模块与软件模块。硬件模块采用 TK1 嵌入式设备 与摄像头模组;软件模块采用 HOG(histogram of oriented gradient)特征提取算 法,SVM(support vector machine)机器学习分类算法,该算法对于光照变化及对比 度变化有良好的鲁棒性,配合 TK1 中的 CUDA 核心识别速度性能良好。我们提 出的方法将在下文中以识别装甲块的案例中详细介绍。</p>
-<p><img src="/2017/04/16/HOG/IMG_0387.JPG" alt="logo"><br><img src="/2017/04/16/HOG/Users/liuzongdai/blog/source/_posts/IMG_0387.JPG" class="[class names]" title="[100] [100] [title text [alt text]]"></p>
+<p><img src="/2017/04/16/HOG/p2.png" alt="系统总览"></p>
+<h3 id="SVM训练分类器"><a href="#SVM训练分类器" class="headerlink" title="SVM训练分类器"></a>SVM训练分类器</h3><p>分类器的训练是为了从一副输入的区域图像中判断其中是否包含目标物体。从训练集样本中提取每张图片的HOG特征,它代表了图像中的梯度水平。Sobel算子用来计算每个像素点的水平和垂直梯度值。我们发现 HOG 特征对于识别有特定纹理的目标有着良好的表现,包括本例中的装甲块,数字,字母,各类标志在现实情景中都是直立面对摄像头,这消除了由于目标旋转及几何失真带来的误差。</p>
+<h1 id="1-gt-训练集样本图片预处理"><a href="#1-gt-训练集样本图片预处理" class="headerlink" title="1&gt;训练集样本图片预处理"></a>1&gt;训练集样本图片预处理</h1><p>将所有样本图片裁剪为统一尺寸,本例中统一为 80px*80px.</p>
+<h1 id="2-gt-计算像素点梯度"><a href="#2-gt-计算像素点梯度" class="headerlink" title="2&gt;计算像素点梯度"></a>2&gt;计算像素点梯度</h1><p>使用 Sobel 算子计算处理后的图像梯度。<br><img src="/2017/04/16/HOG/gradient-kernels" alt="Sobel"><br>通过以下公式得出梯度强度值 g 及角度θ。<br><img src="/2017/04/16/HOG/t0.png" alt=""></p>
+<h1 id="3-gt-在8-8cell内计算梯度直方图"><a href="#3-gt-在8-8cell内计算梯度直方图" class="headerlink" title="3&gt;在8*8cell内计算梯度直方图"></a>3&gt;在8*8cell内计算梯度直方图</h1><p>将图像分成8<em>8的cell，将每一个小块作为一个统计单位。每一个cell内包含64个像素，每个像素有强度及角度两个值。角度的取值范围为0至180,将每一个8</em>8小块进行统计，最终会得到一个能描述每个小块纹理特征的梯度直方图.</p>
+<p><img src="/2017/04/16/HOG/tidu.png" alt="gradient"></p>
+<h1 id="4-gt-Block区域整合"><a href="#4-gt-Block区域整合" class="headerlink" title="4&gt;Block区域整合"></a>4&gt;Block区域整合</h1><p>将4个cell整合成一个16<em>16的Block，每个cell根据直方图可得到一个9</em>1的向量，一个窗口将包含一个36<em>1的向量。取步长为1，将窗口在整个80</em>80的图像上滑动，将得到36<em>9</em>9=2916维的特征向量，Block尺寸K及N维的特征向量计算用以下公式：<br><img src="/2017/04/16/HOG/r1.png" alt="gradient"><br><img src="/2017/04/16/HOG/r2.png" alt="gradient"></p>
 
     
 
