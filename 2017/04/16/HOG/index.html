@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh">
+    <head>
+    <!--
+        © Material Theme
+        https://github.com/viosey/hexo-theme-material
+        Version: 1.3.3 -->
+
+    <!-- Title -->
+    
+    <title>
+        
+            基于TK1 &amp; Manifold的实时目标检测(HOG-SVM方法) | 
+        
+        开坦克的贝塔
+    </title>
+
+    <!-- Meta & Info -->
+    <meta charset="utf-8">
+
+    <!-- dns prefetch -->
+    <meta http-equiv="x-dns-prefetch-control" content="on">
+    
+    
+    
+    
+    
+    
+
+    <meta http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0097A7">
+    <meta name="author" content="开坦克的贝塔">
+    <meta name="description" content="不苟且">
+    <meta name="keywords" content="null">
+
+    <!-- Favicons -->
+    <link rel="icon shortcut" type="image/ico" href="/img/favicon.png">
+    <link rel="icon" sizes="192x192" href="/img/favicon.png">
+    <link rel="apple-touch-icon" href="/img/favicon.png">
+
+    <!--iOS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-title" content="Title">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="480">
+
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="开坦克的贝塔">
+
+    <!-- The Open Graph protocol -->
+    <meta property="og:url" content="http://yoursite.com">
+    <meta property="og:type" content="blog">
+    <meta property="og:title" content="基于TK1 &amp; Manifold的实时目标检测(HOG-SVM方法) | 开坦克的贝塔">
+    <meta property="og:description" content="不苟且">
+    
+
+    <!--[if lte IE 9]>
+        <link rel="stylesheet" href="/css/ie-blocker.css">
+
+        
+            <script src="/js/ie-blocker.zhCN.js"></script>
+        
+    <![endif]-->
+
+    <!-- Import CSS & jQuery -->
+    
+        <link rel="stylesheet" href="/css/material.min.css">
+        <link rel="stylesheet" href="/css/style.min.css">
+        <!-- Config CSS -->
+
+
+<!-- Other Styles -->
+<style>
+  body, html {
+    font-family: Roboto, "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+  }
+
+  a {
+    color: #00838F;
+  }
+
+  .mdl-card__media,
+  #search-label,
+  #search-form-label:after,
+  #scheme-Paradox .hot_tags-count,
+  #scheme-Paradox .sidebar_archives-count,
+  #scheme-Paradox .sidebar-colored .sidebar-header,
+  #scheme-Paradox .sidebar-colored .sidebar-badge{
+    background-color: #0097A7 !important;
+  }
+
+  /* Sidebar User Drop Down Menu Text Color */
+  #scheme-Paradox .sidebar-colored .sidebar-nav>.dropdown>.dropdown-menu>li>a:hover,
+  #scheme-Paradox .sidebar-colored .sidebar-nav>.dropdown>.dropdown-menu>li>a:focus {
+    color: #0097A7 !important;
+  }
+
+  #post_entry-right-info,
+  .sidebar-colored .sidebar-nav li:hover > a,
+  .sidebar-colored .sidebar-nav li:hover > a i,
+  .sidebar-colored .sidebar-nav li > a:hover,
+  .sidebar-colored .sidebar-nav li > a:hover i,
+  .sidebar-colored .sidebar-nav li > a:focus i,
+  .sidebar-colored .sidebar-nav > .open > a,
+  .sidebar-colored .sidebar-nav > .open > a:hover,
+  .sidebar-colored .sidebar-nav > .open > a:focus,
+  #ds-reset #ds-ctx .ds-ctx-entry .ds-ctx-head a {
+    color: #0097A7 !important;
+  }
+
+  .toTop {
+    background: #757575 !important;
+  }
+
+  .material-layout .material-post>.material-nav,
+  .material-layout .material-index>.material-nav,
+  .material-nav a {
+    color: #757575;
+  }
+
+  #scheme-Paradox .MD-burger-layer {
+    background-color: #757575;
+  }
+
+  #scheme-Paradox #post-toc-trigger-btn {
+    color: #757575;
+  }
+
+  .post-toc a:hover {
+    color: #00838F;
+    text-decoration: underline;
+  }
+
+</style>
+
+
+<!-- Theme Background Related-->
+
+    <style>
+      body{
+        background-color: #F5F5F5;
+      }
+
+      /* blog_info bottom background */
+      #scheme-Paradox .material-layout .something-else .mdl-card__supporting-text{
+        background-color: #fff;
+      }
+    </style>
+
+
+
+
+<!-- Fade Effect -->
+
+    <style>
+      .fade {
+        transition: all 800ms linear;
+        -webkit-transform: translate3d(0,0,0);
+        -moz-transform: translate3d(0,0,0);
+        -ms-transform: translate3d(0,0,0);
+        -o-transform: translate3d(0,0,0);
+        transform: translate3d(0,0,0);
+        opacity: 1;
+      }
+
+      .fade.out{
+        opacity: 0;
+      }
+    </style>
+
+
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/queue.js"></script>
+    
+
+    <!-- UC Browser Compatible -->
+    <script>
+        var agent = navigator.userAgent.toLowerCase();
+        if(agent.indexOf('ucbrowser')>0) {
+            document.write("<link rel=\"stylesheet\" href=\"/css/uc.css\">");
+            alert('由于 UC 浏览器使用极旧的内核，而本网站使用了一些新的特性。\n为了您能更好的浏览，推荐使用 Chrome 或 Firefox 浏览器。');
+        }
+    </script>
+
+    
+
+    
+
+
+    <!-- Bing Background -->
+    
+
+    <!-- Custom Head -->
+    
+</head>
+
+
+    
+        <body id="scheme-Paradox" class="lazy">
+            <div class="material-layout  mdl-js-layout has-drawer is-upgraded">
+                
+
+                <!-- Main Container -->
+                <main class="material-layout__content" id="main">
+
+                    <!-- Top Anchor -->
+                    <div id="top"></div>
+
+                    
+                        <!-- Hamburger Button -->
+                        <button class="MD-burger-icon sidebar-toggle">
+                            <span class="MD-burger-layer"></span>
+                        </button>
+                    
+
+                    <!-- Post TOC -->
+
+    
+    <!-- Back Button -->
+    <!--
+    <div class="material-back" id="backhome-div" tabindex="0">
+        <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon"
+           href="#" onclick="window.history.back();return false;"
+           target="_self"
+           role="button"
+           data-upgraded=",MaterialButton,MaterialRipple">
+            <i class="material-icons" role="presentation">arrow_back</i>
+            <span class="mdl-button__ripple-container">
+                <span class="mdl-ripple"></span>
+            </span>
+        </a>
+    </div>
+    -->
+
+    <!-- Left aligned menu below button -->
+    <button id="post-toc-trigger-btn"
+        class="mdl-button mdl-js-button mdl-button--icon">
+        <i class="material-icons">format_list_numbered</i>
+    </button>
+
+    <ul class="post-toc-wrap mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="post-toc-trigger-btn" style="max-height:80vh; overflow-y:scroll;">
+        <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#系统总览"><span class="post-toc-number">1.</span> <span class="post-toc-text">系统总览</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#SVM训练分类器"><span class="post-toc-number">2.</span> <span class="post-toc-text">SVM训练分类器</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1-gt-训练集样本图片预处理"><span class="post-toc-number">2.0.1.</span> <span class="post-toc-text">1>训练集样本图片预处理</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-gt-计算像素点梯度"><span class="post-toc-number">2.0.2.</span> <span class="post-toc-text">2>计算像素点梯度</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-gt-在8-8cell内计算梯度直方图"><span class="post-toc-number">2.0.3.</span> <span class="post-toc-text">3>在8*8cell内计算梯度直方图</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-gt-Block区域整合"><span class="post-toc-number">2.0.4.</span> <span class="post-toc-text">4>Block区域整合</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-gt-训练SVM分类器"><span class="post-toc-number">2.0.5.</span> <span class="post-toc-text">5>训练SVM分类器</span></a></li></ol></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#目标实时检测"><span class="post-toc-number">3.</span> <span class="post-toc-text">目标实时检测</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#在TK1中测试"><span class="post-toc-number">4.</span> <span class="post-toc-text">在TK1中测试</span></a></li></ol>
+
+        <!--
+        <li class="mdl-menu__item">
+            Some Action
+        </li>
+        -->
+    </ul>
+
+
+
+
+<!-- Layouts -->
+
+    <!-- Post Module -->
+    <div class="material-post_container">
+
+        <div class="material-post mdl-grid">
+            <div class="mdl-card mdl-shadow--4dp mdl-cell mdl-cell--12-col">
+
+                <!-- Post Header(Thumbnail & Title) -->
+                
+    <!-- Paradox Post Header -->
+    
+        
+            <!-- Random Thumbnail -->
+            <div class="post_thumbnail-random mdl-card__media mdl-color-text--grey-50">
+            <script>
+    var randomNum = Math.floor(Math.random() * 19 + 1);
+
+    $('.post_thumbnail-random').attr('data-original', '/img/random/material-' + randomNum + '.png');
+    $('.post_thumbnail-random').addClass('lazy');
+</script>
+
+        
+    
+            <p class="article-headline-p">
+                基于TK1 & Manifold的实时目标检测(HOG-SVM方法)
+            </p>
+        </div>
+
+
+
+
+
+                
+                    <!-- Paradox Post Info -->
+                    <div class="mdl-color-text--grey-700 mdl-card__supporting-text meta">
+
+    <!-- Author Avatar -->
+    <div id="author-avatar">
+        <img src="/img/avatar.png" width="44px" height="44px" alt="Author Avatar"/>
+    </div>
+    <!-- Author Name & Date -->
+    <div>
+        <strong>开坦克的贝塔</strong>
+        <span>4月 16, 2017</span>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <!-- Favorite -->
+    <!--
+        <button id="article-functions-like-button" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon btn-like">
+            <i class="material-icons" role="presentation">favorite</i>
+            <span class="visuallyhidden">favorites</span>
+        </button>
+    -->
+
+    <!-- Qrcode -->
+    
+
+    <!-- Tags (bookmark) -->
+    
+    <button id="article-functions-viewtags-button" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+        <i class="material-icons" role="presentation">bookmark</i>
+        <span class="visuallyhidden">bookmark</span>
+    </button>
+    <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="article-functions-viewtags-button">
+        <li class="mdl-menu__item">
+        
+    </ul>
+    
+
+    <!-- Share -->
+    <button id="article-fuctions-share-button" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+    <i class="material-icons" role="presentation">share</i>
+    <span class="visuallyhidden">share</span>
+</button>
+<ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="article-fuctions-share-button">
+    
+
+    
+
+    <!-- Share Weibo -->
+    
+        <a class="post_share-link" href="http://service.weibo.com/share/share.php?appkey=&title=基于TK1 &amp; Manifold的实时目标检测(HOG-SVM方法)&url=http://yoursite.com//2017/04/16/HOG/index.html&pic=&searchPic=false&style=simple" target="_blank">
+            <li class="mdl-menu__item">
+                分享到微博
+            </li>
+        </a>
+    
+
+    <!-- Share Twitter -->
+    
+        <a class="post_share-link" href="https://twitter.com/intent/tweet?text=基于TK1 &amp; Manifold的实时目标检测(HOG-SVM方法)&url=http://yoursite.com//2017/04/16/HOG/index.html&via=开坦克的贝塔" target="_blank">
+            <li class="mdl-menu__item">
+                分享到 Twitter
+            </li>
+        </a>
+    
+
+    <!-- Share Facebook -->
+    
+        <a class="post_share-link" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com//2017/04/16/HOG/index.html" target="_blank">
+            <li class="mdl-menu__item">
+                分享到 Facebook
+            </li>
+        </a>
+    
+
+    <!-- Share Google+ -->
+    
+        <a class="post_share-link" href="https://plus.google.com/share?url=http://yoursite.com//2017/04/16/HOG/index.html" target="_blank">
+            <li class="mdl-menu__item">
+                分享到 Google+
+            </li>
+        </a>
+    
+
+    <!-- Share LinkedIn -->
+    
+
+    <!-- Share QQ -->
+    
+
+    <!-- Share Telegram -->
+    
+</ul>
+
+</div>
+
+                
+
+                <!-- Post Content -->
+                <div id="post-content" class="mdl-color-text--grey-700 mdl-card__supporting-text fade out">
+    
+        <p>本文提出了一个基于 TK1 微型处理器的目标检测与识别系统,使用 HOG(histogram of oriented gradient)进行特征提取,SVM(support vector machine) 进行分类。针对不同的目标检测识别的情景下,给出了方案的最优化调整方式。 算法结合 TK1 性能强大的 GPU 模块,准确度与速度在实时条件下都具有良好的 表现,可广泛应用于各类微型机器人以及要求整体体积小、功耗低、实时反应好的情景。</p>
+<h1 id="系统总览"><a href="#系统总览" class="headerlink" title="系统总览"></a>系统总览</h1><p>本系统包含两大模块,硬件模块与软件模块。硬件模块采用 TK1 嵌入式设备 与摄像头模组;软件模块采用 HOG(histogram of oriented gradient)特征提取算 法,SVM(support vector machine)机器学习分类算法,该算法对于光照变化及对比 度变化有良好的鲁棒性,配合 TK1 中的 CUDA 核心识别速度性能良好。我们提 出的方法将在下文中以识别装甲块的案例中详细介绍。</p>
+<p><img src="/2017/04/16/HOG/p2.png" alt="&quot;系统总览&quot;"></p>
+<h1 id="SVM训练分类器"><a href="#SVM训练分类器" class="headerlink" title="SVM训练分类器"></a>SVM训练分类器</h1><p>分类器的训练是为了从一副输入的区域图像中判断其中是否包含目标物体。从训练集样本中提取每张图片的HOG特征,它代表了图像中的梯度水平。Sobel算子用来计算每个像素点的水平和垂直梯度值。我们发现 HOG 特征对于识别有特定纹理的目标有着良好的表现,包括本例中的装甲块,数字,字母,各类标志在现实情景中都是直立面对摄像头,这消除了由于目标旋转及几何失真带来的误差。</p>
+<h3 id="1-gt-训练集样本图片预处理"><a href="#1-gt-训练集样本图片预处理" class="headerlink" title="1&gt;训练集样本图片预处理"></a>1&gt;训练集样本图片预处理</h3><p>将所有样本图片裁剪为统一尺寸,本例中统一为 80px*80px.</p>
+<h3 id="2-gt-计算像素点梯度"><a href="#2-gt-计算像素点梯度" class="headerlink" title="2&gt;计算像素点梯度"></a>2&gt;计算像素点梯度</h3><p>使用 Sobel 算子计算处理后的图像梯度。<br><img src="/2017/04/16/HOG/gradient-kernels.png" alt="Sobel"><br>通过以下公式得出梯度强度值 g 及角度θ。</p>
+<p><img src="/2017/04/16/HOG/t0.png" alt=""></p>
+<h3 id="3-gt-在8-8cell内计算梯度直方图"><a href="#3-gt-在8-8cell内计算梯度直方图" class="headerlink" title="3&gt;在8*8cell内计算梯度直方图"></a>3&gt;在8*8cell内计算梯度直方图</h3><p>将图像分成8<em>8的cell，将每一个小块作为一个统计单位。每一个cell内包含64个像素，每个像素有强度及角度两个值。角度的取值范围为0至180,将每一个8</em>8小块进行统计，最终会得到一个能描述每个小块纹理特征的梯度直方图.</p>
+<p><img src="/2017/04/16/HOG/tidu.png" alt="gradient"></p>
+<h3 id="4-gt-Block区域整合"><a href="#4-gt-Block区域整合" class="headerlink" title="4&gt;Block区域整合"></a>4&gt;Block区域整合</h3><p>将4个cell整合成一个16<em>16的Block，每个cell根据直方图可得到一个9</em>1的向量，一个窗口将包含一个36<em>1的向量。取步长为1，将窗口在整个80</em>80的图像上滑动，将得到36<em>9</em>9=2916维的特征向量，Block尺寸K及N维的特征向量计算用以下公式：<br><img src="/2017/04/16/HOG/r1.png" alt=""><br><img src="/2017/04/16/HOG/r2.png" alt=""><br>R为输入图像的尺寸，M为cell尺寸，B为每个Block内的cell数量，R为直方图内的统计分量数量。本例中，R=80<em>80，M=8</em>8，B=4，R=9。</p>
+<h3 id="5-gt-训练SVM分类器"><a href="#5-gt-训练SVM分类器" class="headerlink" title="5&gt;训练SVM分类器"></a>5&gt;训练SVM分类器</h3><p>SVM是一种通过构建一个超平面完成对数据的分类。SVM分类快速，高度准确，相比其他分类方法不容易出现过拟合。也可以很快地训练，SVM分类器对于要求速度与准确度的实时目标检测与识别表现极为出色。我们这里使用linear kernel的SVM模型，通过大量正样本与负样本的训练，我们可以得到一个SVM分类器，为了最优化该分类器的准确度，我们需要对一个控制损失函数的C值进行设置，C值过大将造成过拟合，C值过小将造成欠拟合，因此，我们将用交叉验证集测评，使交叉验证集准确度最高的C值将被选择。<br><img src="/2017/04/16/HOG/Cvalue.png" alt="梯度示意图"></p>
+<h1 id="目标实时检测"><a href="#目标实时检测" class="headerlink" title="目标实时检测"></a>目标实时检测</h1><p>   通过前面的步骤，我们已经完成了分类器的训练，现在我们可以将其运用于TK1上完成目标识别任务。实时条件下利用SVM分类器对目标进行识别的原理（如图2）<br>首先从摄像头读取一帧图像进行Gamma校正或者直方图均衡化后，利用图像金字塔以一定倍数ɑ进行缩放，接着在每一幅图像用尺寸为K的窗口进行滑动，步长为S，计算每个被窗口截取的图像的梯度直方图，得到向量N并将其输入SVM分类器可得到结果，在所有数据处理完后，可得到该副图像中是否有目标物体，若有，则可进行其他操作，操作完成后，读取下一帧画面。<br>   在上述过程中，我们需要讨论2个极为重要的参数，缩放倍数ɑ，步长S。这两个参数设置将将决定我们整个系统的速度与准确度。下面我们将详细讨论这两个参数。</p>
+<p>#缩放倍数ɑ<br>  为了对多尺寸目标的识别，我们必须对输入图像进行一定倍数的缩放，直到缩放后的图像尺寸达到我们预先设置好的阈值，而每次的缩放倍数就是ɑ。我们可以想象当ɑ越小时，我们的检测准确率将会越高，然而我们需要处理更多的图片数据，这使我们系统的速度降低；当ɑ越大时，我们的准确率会下降，系统的速度会上升。<br><img src="/2017/04/16/HOG/jzt.png" alt="图像金字塔"></p>
+<p>#步长S<br>步长S的数值代表了窗口每次水平或者竖直移动的距离。同样，如果S值较小，窗口移动得越慢，程序将计算每一块区域，需要处理的图像就越多，准确度越高，速度越低；反之，程序可能漏掉一些区域，准确度越低，速度越高。<br><img src="/2017/04/16/HOG/p3.png" alt="图像金字塔"><br>如何选择缩放倍数ɑ，与步长S要根据系统具体的应用情境去设置，对于要求准确度极高，但是对实时性要求不高的情境，可以选择较小ɑ与S；在对要求实时很高的情境下，可以适当增加ɑ与S的值。</p>
+<h1 id="在TK1中测试"><a href="#在TK1中测试" class="headerlink" title="在TK1中测试"></a>在TK1中测试</h1><p>我们使用OpenCV将上述算法应用在TK1中，结合CUDA我们使用TK1的GPU完成大部分运算操作。我们的测试数据为3个640*480的MP4视频文件，调整了缩放比率ɑ与步长S得到了以下的实验结果。从中我们可以得出缩放比率ɑ、步长S、FPS、精度之间的大致关系。过大的步长S将严重影响精度，在步长S=8时，缩放比率控制在1.3至1.5之间将得到一个较高的精度与FPS。所以在本试验中，我们设置ɑ=1.4，S=8将使我们的系统达到最优性能。<br><img src="/2017/04/16/HOG/acc.png" alt="图像金字塔"><br><img src="/2017/04/16/HOG/fps.png" alt="图像金字塔"></p>
+
+    
+
+    
+</div>
+
+
+                
+
+                <!-- Post Comments -->
+                
+                    
+
+
+
+
+
+
+
+                
+            </div>
+
+            <!-- Post Prev & Next Nav -->
+            <nav class="material-nav mdl-color-text--grey-50 mdl-cell mdl-cell--12-col">
+    <!-- Prev Nav -->
+    
+        <a href="/2017/04/17/HOG_Code/" id="post_nav-newer" class="prev-content">
+            <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--white mdl-color-text--grey-900" role="presentation">
+                <i class="material-icons">arrow_back</i>
+            </button>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            新篇
+        </a>
+    
+
+    <!-- Section Spacer -->
+    <div class="section-spacer"></div>
+
+    <!-- Next Nav -->
+    
+        <a href="/2017/01/31/hello-world/" id="post_nav-older" class="next-content">
+            旧篇
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--white mdl-color-text--grey-900" role="presentation">
+                <i class="material-icons">arrow_forward</i>
+            </button>
+        </a>
+    
+</nav>
+
+        </div>
+    </div>
+
+
+
+                    
+                        <!-- Overlay For Active Sidebar -->
+<div class="sidebar-overlay"></div>
+
+<!-- Material sidebar -->
+<aside id="sidebar" class="sidebar sidebar-colored sidebar-fixed-left" role="navigation">
+    <div id="sidebar-main">
+        <!-- Sidebar Header -->
+        <div class="sidebar-header header-cover" style="background-image: url(/img/sidebar_header.png);">
+    <!-- Top bar -->
+    <div class="top-bar"></div>
+
+    <!-- Sidebar toggle button -->
+    <button type="button" class="sidebar-toggle mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" style="display: initial;" data-upgraded=",MaterialButton,MaterialRipple">
+        <i class="material-icons">clear_all</i>
+        <span class="mdl-button__ripple-container">
+            <span class="mdl-ripple">
+            </span>
+        </span>
+    </button>
+
+    <!-- Sidebar Avatar -->
+    <div class="sidebar-image">
+        <img src="/img/avatar.png" alt="开坦克的贝塔's avatar">
+    </div>
+
+    <!-- Sidebar Email -->
+    <a data-toggle="dropdown" class="sidebar-brand" href="#settings-dropdown">
+        youremail@email.com
+        <b class="caret"></b>
+    </a>
+</div>
+
+
+        <!-- Sidebar Navigation  -->
+        <ul class="nav sidebar-nav">
+    <!-- User dropdown  -->
+    <li class="dropdown">
+        <ul id="settings-dropdown" class="dropdown-menu">
+            
+                <li>
+                    <a href="#" target="_blank" title="Email Me">
+                        
+                            <i class="material-icons sidebar-material-icons sidebar-indent-left1pc-element">email</i>
+                        
+                        Email Me
+                    </a>
+                </li>
+            
+        </ul>
+    </li>
+
+    <!-- Homepage -->
+    
+        <li id="sidebar-first-li">
+            <a href="/" target="_self">
+                
+                    <i class="material-icons sidebar-material-icons">home</i>
+                
+                主页
+            </a>
+        </li>
+        
+    
+
+    <!-- Archives  -->
+    
+        <li class="dropdown">
+            <a href="#" class="ripple-effect dropdown-toggle" data-toggle="dropdown">
+                
+                    <i class="material-icons sidebar-material-icons">inbox</i>
+                
+                    归档
+                <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+            <li>
+                <a class="sidebar_archives-link" href="/archives/2017/04/">四月 2017<span class="sidebar_archives-count">2</span></a></li><li><a class="sidebar_archives-link" href="/archives/2017/01/">一月 2017<span class="sidebar_archives-count">1</span></a>
+            </ul>
+        </li>
+        
+    
+
+    <!-- Categories  -->
+    
+        <li class="dropdown">
+            <a href="#" class="ripple-effect dropdown-toggle" data-toggle="dropdown">
+                
+                    <i class="material-icons sidebar-material-icons">chrome_reader_mode</i>
+                
+                分类
+                <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                <a class="sidebar_archives-link" href="/categories/环境安装/">环境安装<span class="sidebar_archives-count">1</span></a></li><li><a class="sidebar_archives-link" href="/categories/计算机视觉/">计算机视觉<span class="sidebar_archives-count">2</span></a>
+            </ul>
+        </li>
+        
+    
+
+    <!-- Pages  -->
+    
+
+    <!-- Article Number  -->
+    
+</ul>
+
+
+        <!-- Sidebar Footer -->
+        <!--
+I'm glad you use this theme, the development is no so easy, I hope you can keep the copyright, I will thank you so much.
+If you still want to delete the copyrights, could you still retain the first one? Which namely "Theme Material"
+It will not impact the appearance and can give developers a lot of support :)
+
+很高兴您使用并喜欢该主题，开发不易 十分谢谢与希望您可以保留一下版权声明。
+如果您仍然想删除的话 能否只保留第一项呢？即 "Theme Material"
+它不会影响美观并可以给开发者很大的支持和动力。 :)
+-->
+
+<!-- Sidebar Divider -->
+
+    <div class="sidebar-divider"></div>
+
+
+<!-- Theme Material -->
+
+    <a href="https://github.com/viosey/hexo-theme-material"  class="sidebar-footer-text-a" target="_blank">
+        <div class="sidebar-text mdl-button mdl-js-button mdl-js-ripple-effect sidebar-footer-text-div" data-upgraded=",MaterialButton,MaterialRipple">
+            主题 - Material
+            <span class="sidebar-badge badge-circle">i</span>
+        </div>
+    </a>
+
+
+<!-- Help & Support -->
+<!--
+
+-->
+
+<!-- Feedback -->
+<!--
+
+-->
+
+<!-- About Theme -->
+<!--
+
+-->
+
+    </div>
+
+    <!-- Sidebar Image -->
+    
+
+</aside>
+
+                    
+
+                    
+                        <!-- Footer Top Button -->
+                        <div class="toTop-wrap">
+    <a href="#top" class="toTop">
+        <i class="material-icons footer_top-i">expand_less</i>
+    </a>
+</div>
+
+                    
+
+                    <!--Footer-->
+<footer class="mdl-mini-footer" id="bottom">
+    
+        <!-- Paradox Footer Left Section -->
+        <div class="mdl-mini-footer--left-section sns-list">
+    <!-- Twitter -->
+    
+        <a href="https://twitter.com/twitter" target="_blank">
+            <button class="mdl-mini-footer--social-btn social-btn" style="background-image: url(/img/footer/footer_ico-twitter.svg);">
+                <span class="visuallyhidden">Twitter</span>
+            </button><!--
+     --></a>
+    
+
+    <!-- Facebook -->
+    
+        <a href="https://www.facebook.com/facebook" target="_blank">
+            <button class="mdl-mini-footer--social-btn social-btn" style="background-image: url(/img/footer/footer_ico-facebook.svg);">
+                <span class="visuallyhidden">Facebook</span>
+            </button><!--
+     --></a>
+    
+
+    <!-- Google + -->
+    
+        <a href="https://www.google.com/" target="_blank">
+            <button class="mdl-mini-footer--social-btn social-btn" style="background-image: url(/img/footer/footer_ico-gplus.svg);">
+                <span class="visuallyhidden">Google Plus</span>
+            </button><!--
+     --></a>
+    
+
+    <!-- Weibo -->
+    
+
+    <!-- Instagram -->
+    
+
+    <!-- Tumblr -->
+    
+
+    <!-- Github -->
+    
+
+    <!-- LinkedIn -->
+    
+
+    <!-- Zhihu -->
+    
+
+    <!-- Bilibili -->
+    
+
+    <!-- Telegram -->
+    
+</div>
+
+
+        <!--Copyright-->
+        <div id="copyright">
+            Copyright&nbsp;©&nbsp;
+            <script type="text/javascript">
+                var fd = new Date();
+                document.write(fd.getFullYear());
+            </script>
+            &nbsp;开坦克的贝塔
+        </div>
+
+        <!-- Paradox Footer Right Section -->
+
+        <!--
+        I am glad you use this theme, the development is no so easy, I hope you can keep the copyright.
+        It will not impact the appearance and can give developers a lot of support :)
+
+        很高兴您使用该主题，开发不易，希望您可以保留一下版权声明。
+        它不会影响美观并可以给开发者很大的支持。 :)
+        -->
+
+        <div class="mdl-mini-footer--right-section">
+            <div>
+                <div class="footer-develop-div">Powered by <a href="https://hexo.io" target="_blank" class="footer-develop-a">Hexo</a></div>
+                <div class="footer-develop-div">Theme - <a href="https://github.com/viosey/hexo-theme-material" target="_blank" class="footer-develop-a">Material</a></div>
+            </div>
+        </div>
+    
+</footer>
+
+
+                    <!-- Import File -->
+
+    <script src="/js/lazyload.min.js"></script>
+    <script src="/js/js.min.js"></script>
+
+
+
+    <script src="/js/nprogress.js"></script>
+
+
+<script type="text/javascript">
+    NProgress.configure({
+        showSpinner: true
+    });
+    NProgress.start();
+    $('#nprogress .bar').css({
+        'background': '#29d'
+    });
+    $('#nprogress .peg').css({
+        'box-shadow': '0 0 10px #29d, 0 0 15px #29d'
+    });
+    $('#nprogress .spinner-icon').css({
+        'border-top-color': '#29d',
+        'border-left-color': '#29d'
+    });
+    setTimeout(function() {
+        NProgress.done();
+        $('.fade').removeClass('out');
+    }, 800);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Window Load-->
+<script>
+    $(window).load(function() {
+        // Post_Toc parent position fixed
+        $('.post-toc-wrap').parent('.mdl-menu__container').css('position', 'fixed');
+    });
+</script>
+
+<!-- MathJax Load-->
+
+<script>
+    <!-- Offer LazyLoad -->
+    queue.offer(function(){
+        $('.lazy').lazyload({
+            effect : 'show'
+        });
+    });
+
+    <!-- Start Queue -->
+    $(document).ready(function(){
+        setTimeout(function(){
+            setInterval(function(){
+                queue.execNext();
+            },200);
+        },3000);
+    });
+</script>
+
+                </main>
+            </div>
+        </body>
+    
+</html>
